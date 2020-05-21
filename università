@@ -1,0 +1,401 @@
+create database universita;
+	use universita;
+	
+
+drop table if exists studente;
+create table studente (
+	matricola numeric(10) PRIMARY KEY CHECK (matricola > 0),
+	codice_corso_laurea numeric(6)  REFERENCES corso_laurea(codice) ON UPDATE cascade,
+	nome char(20) not null,
+	cognome char(20) not null,
+	data_nascita date not null,
+	codice_fiscale char(16) not null unique,
+	foto blob
+);
+
+
+drop table if exists docente;
+create table docente (
+	matricola numeric(10) PRIMARY KEY CHECK (matricola > 0),
+	codice_dipartimento varchar(50)  REFERENCES dipartimento(codice) ON UPDATE cascade,
+	nome char(20) not null,
+	cognome char(20) not null,
+	data_nascita date not null,
+	codice_fiscale char(16) not null unique,
+	foto blob
+);
+
+
+drop table if exists modulo;
+create table modulo (
+	codice numeric(10) PRIMARY KEY CHECK (codice > 0),
+	nome char(50) unique not null,
+	descrizione varchar(100),
+	cfu smallint not null CHECK (cfu > 5 AND cfu < 13)
+);
+
+
+drop table if exists esame;
+create table esame (
+	matricola_studente char(8)  REFERENCES studente(matricola) ON UPDATE cascade,
+	codice_modulo char (8) REFERENCES modulo(codice) ON UPDATE cascade,
+	matricola_docente char(6) REFERENCES docente(matricola) ON UPDATE cascade,
+	data_esame date,
+	voto smallint CHECK (voto > 0 AND voto < 32),
+	note varchar(100)
+);
+
+
+drop table if exists corso_laurea;
+create table corso_laurea (
+	codice numeric(6) PRIMARY KEY CHECK (codice > 0),
+	nome varchar(100) unique not null,
+	descrizione varchar (100)
+);
+
+
+drop table if exists dipartimento;
+create table dipartimento (
+	codice numeric(6) primary key check (codice > 0),
+	nome varchar(50) unique not null
+);
+
+
+drop table if exists sede;
+create table sede (
+	codice numeric(6) primary key check (codice > 0),
+	indirizzo varchar (100) unique not null,
+	citta varchar (50) not null
+);
+
+
+drop table if exists sede_dipartimento;
+create table sede_dipartimento (
+	codice_sede numeric(6) references sede(codice) ON UPDATE cascade,
+	codice_dipartimento numeric(6)references dipartimento(codice) ON UPDATE cascade,
+	note varchar (100)
+);
+
+/*STUDENTE*/
+insert into studente (matricola, codice_corso_laurea, nome, cognome, data_nascita, codice_fiscale, foto)
+    values	(704969, 468632, 'Christian', 'Borraccino', '1997-01-31', 'EODCHFGRAMVK9373', null),
+			(708565, 468632, 'Niccolò', 'Santoro', '1999-08-04', 'NICSANT4630OTHGD', null),
+			(709542, 468625, 'Marco', 'Carad', '1991-03-27', 'MARCCARD89375HGS', null),
+			(701239, 468625, 'Marco', 'Debab', '1995-11-15', 'MARCDEBA89374G6J', null),
+			(704589, 462589, 'Giorgia', 'Marcello', '1980-07-09', 'GIORMARC84H5J61K', null),
+			(707531, 462589, 'Simona', 'Sferra', '2000-03-03', 'SIMOSFER03CC004H', null),
+			(702598, 461376, 'Giovanna', 'Fumagalli', '1999-12-21', 'GHR56QFDTR4D45AD', null),
+			(700033, 461376, 'Maurizio', 'Bianchi', '1999-05-28', 'VRDMRZDGFT6YACVB', null),
+			(701158, 468632, 'Roberto', 'Bruno', '1993-01-26', 'RBBBBAFDTR4D45AD', null);
+
+/*DOCENTE*/
+insert into docente (matricola, codice_dipartimento, nome, cognome, data_nascita, codice_fiscale, foto)
+    values	(486589, 123221, 'Antonio', 'Rossi', '1978-04-30', 'FDGJDKCMRHNT7678', null), /*prog*/
+			(486574, 123221, 'Giulia', 'Alzano', '1985-10-15', 'HYEUFNSGBCK47583', null), /*analisi*/
+			(489625, 125687, 'Renato', 'Brambilla', '1985-02-02', 'AFGQERAGETRVFD6Y', null), /*metodi*/
+			(485212, 125687, 'Valerio', 'Basile', '1959-04-01', 'AGHDTE5D8HUIQRTZ', null), /*parti*/
+			(482359, 124536, 'Simone', 'Verdi', '1971-07-10', 'SVRAFGR456ASDQWZ', null), /*termo*/
+			(487520, 124536, 'Paola', 'Cracco', '1972-05-27', 'XFRTWU654FGHAZUR', null), /*micro*/
+			(485122, 123221, 'Giorgio', 'Conte', '1958-01-15', 'FRSGNN15FGAD1RTG', null);
+
+/*MODULO*/
+insert into modulo (codice, nome, descrizione, cfu)
+    values	(135486, 'Programmazione', 'Corso per imparare a programmare', 12),
+			(135475, 'Analisi', 'Corso di analisi matematica', 9),
+			(135688, 'Metodi di Osservazione', null, 6),
+			(132486, 'Parti del Corpo', 'Si imparano le parti del corpo', 10),
+			(135544, 'Termofluidodinamica', null, 12),
+			(130689, 'Microbiologia', 'Corso di microbiologia', 8),
+			(138744, 'Algoritmi e Strutture Dati', null, 9);
+
+/*ESAME*/
+insert into esame (matricola_studente, codice_modulo, matricola_docente, data_esame, voto, note)
+    values	(704969, 135486, 486589, '2019-01-30', 25, 'Troppo bravo'), /*christian, prog*/
+			(704969, 135475, 486574, '2020-01-31', 21, 'Molto bravo'), /*christian, analisi*/
+			(708565, 135486, 486589, '2019-01-15', 28, 'Spettacolare'), /*niccolò, prog*/
+			(708565, 135688, 489625, '2020-02-04', 24, 'Discreto'), /*niccolò, metodi*/
+			(709542, 135486, 486589, '2019-07-06', 26, 'Buono'), /*marco c, prog*/
+			(709542, 135475, 486574, '2019-01-30', 19, null), /*marco c, analisi*/
+			(701239, 135486, 486589, '2020-03-15', 26, 'Buono'), /*marco d, prog*/
+			(701239, 135688, 489625, '2019-05-14', 28, 'Spettacolare'), /*marco d, metodi*/
+			(704589, 130689, 487520, '2019-02-09', 21, null), /*giorgia, micro*/
+			(704589, 132486, 485212, '2019-11-20', 24, 'Discreto'), /*giorgia, parti*/
+			(707531, 130689, 487520, '2019-09-20', 30, 'Fantastico'), /*simona, micro*/
+			(707531, 132486, 485212, '2020-02-25', 28, 'Spettacolare'), /*simona, parti*/
+			(702598, 135544, 482359, '2019-06-27', 20, null), /*giovanna, termo*/
+			(702598, 135688, 489625, '2019-09-15', 26, 'Buono'), /*giovanna, metodi*/
+			(700033, 135544, 482359, '2019-04-30', 28, 'Spettacolare'), /*maurizio, termo*/
+			(700033, 135475, 486574, '2020-01-17', 24, 'Discreto'), /*maurizio, analisi*/
+			(null, 138744, 485122, null, null, null),
+			(701158, 135475, 486574, '2018-05-19', 12, 'Brutto'); /*roberto, analisi*/
+			
+
+/*CORSO LAUREA*/
+insert into corso_laurea (codice, nome, descrizione)
+	values	(468632, 'Informatica e Comunicazione Digitale', 'Sede distaccata di Taranto'),
+			(468625, 'Informatica e Tecnologie per la Produzione del Software', 'Sede di Bari'),
+			(462589, 'Medicina e Chirurgia', 'Sede di Bari'),
+			(461376, 'Ingegneria dei Sistemi Aerospaziali', 'Sede distaccata di Taranto');
+
+/*DIPARTIMENTO*/
+insert into dipartimento (codice, nome)
+	values	(123221, 'Informatica'),
+			(125687, 'Medicina'),
+			(124536, 'Ingegneria');
+
+/*SEDE*/
+insert into sede (codice, indirizzo, citta)
+	values	(385487, 'Via A. De Gasperi, Quartiere Paolo VI', 'Taranto'),
+			(385445, 'Via Orabona 4', 'Bari'),
+			(382178, 'Piazza Giulio Cesare 11', 'Bari'),
+			(385898, 'Viale del Turismo 8,  Quartiere Paolo VI', 'Taranto');
+
+/*SEDE DIPARTIMENTO*/
+insert into sede_dipartimento (codice_sede, codice_dipartimento, note)
+	values  (385487, 123221, 'Sede distaccata del polo UNIBA di Bari'),
+			(385445, 123221, 'Sede del polo UNIBA di Bari'),
+			(382178, 125687, 'Sede a Bari'),
+			(385898, 124536, 'Sede distaccata del polo POLIBA di Bari');
+      
+      
+SELECT
+FROM
+WHERE
+;
+
+
+/*
+  X. Restituire la lista degli esami (codice modulo, data e voto)
+     sostenuti dallo studente con matricola 704969
+*/
+
+SELECT codice_modulo, data_esame, voto
+
+FROM esame
+
+WHERE matricola_studente = 704969
+;
+
+/*
+	1.Mostrare nome e descrizione di tutti i moduli da 9 CFU
+*/
+
+SELECT nome, descrizione
+FROM modulo
+WHERE cfu = 9
+;
+
+/*
+	2.Mostrare matricola, nome e cognome dei docenti che hanno più di 60 anni
+*/
+SELECT matricola, nome, cognome
+FROM docente
+WHERE data_nascita < '1960-01-01'
+;
+
+/*
+	3.Mostrare nome, cognome e nome del dipartimento di ogni docente,
+	ordinati dal più giovane al più anziano.
+*/
+SELECT doc.nome, doc.cognome, dip.nome
+FROM docente as doc, dipartimento as dip
+WHERE codice_dipartimento = dip.codice
+ORDER BY data_nascita desc
+;
+
+/*
+	4.Mostrare città e indirizzo di ogni sede del dipartimento di codice "123221"
+*/
+SELECT citta, indirizzo
+FROM  sede, sede_dipartimento
+WHERE codice_dipartimento = 123221 AND codice = codice_sede
+;
+
+/*
+	5.Mostrare nome del dipartimento, città e indirizzo di ogni sede di ogni dipartimento,
+	ordinate alfabeticamente prima per nome dipartimento, poi per nome città e infine per
+	indirizzo.
+*/
+SELECT nome, citta, indirizzo
+FROM dipartimento, sede
+ORDER BY nome asc
+;
+
+SELECT nome, citta, indirizzo
+FROM dipartimento, sede
+ORDER BY citta asc
+;
+
+SELECT nome, citta, indirizzo
+FROM dipartimento, sede
+ORDER BY indirizzo asc
+;
+
+/*
+	6.Mostrare il nome di ogni dipartimento che ha una sede a Bari.
+*/
+SELECT dip.nome
+FROM dipartimento as dip, sede_dipartimento as s, sede as sede
+WHERE sede.citta = 'Bari' and s.codice_dipartimento = dip.codice and sede.codice = s.codice_sede
+;
+
+/*
+	7.Mostrare il nome di ogni dipartimento che non ha sede a Brindisi.
+*/
+SELECT dip.nome
+FROM dipartimento as dip, sede_dipartimento as s, sede as sede
+WHERE sede.citta <> 'Brindisi' and s.codice_dipartimento = dip.codice and sede.codice = s.codice_sede
+;
+
+/*
+	8.Mostrare media, numero esami sostenuti e totale CFU acquisiti dello studente con
+	matricola 123456.
+*/
+SELECT avg(es.voto) as media_voti, count(es.matricola_studente) as esami_superati, sum(mo.cfu) as somma_cfu
+FROM esame as es join modulo as mo
+WHERE es.matricola_studente = 704969 AND mo.codice = es.codice_modulo
+;
+
+/*
+	9.Mostrare nome, cognome, nome del corso di laurea, media e numero esami sostenuti
+	dello studente con matricola 123456.
+*/
+SELECT st.nome, st.cognome, cl.nome, avg(es.voto) as media_voti, count(es.matricola_studente) as numero_esami
+FROM corso_laurea as cl, studente as st JOIN esame as es
+WHERE es.matricola_studente = 704969 and es.matricola_studente = st.matricola and st.codice_corso_laurea = cl.codice
+;
+
+/*
+	10.Mostrare codice, nome e voto medio di ogni modulo, ordinati dalla media più
+	alta alla più bassa.
+*/
+SELECT m.codice, m.nome, avg(es.voto) as media_voti
+FROM modulo as m, esame as es
+WHERE m.codice = es.codice_modulo
+GROUP BY es.codice_modulo
+ORDER BY media_voti desc
+;
+
+/*
+	11.Mostrare nome e cognome del docente, nome e descrizione del modulo per ogni docente ed ogni
+	modulo di cui quel docente abbia tenuto almeno un esame; il risultato deve includere anche
+	i docenti che non abbiano tenuto alcun esame, in quel caso rappresentati con un'unica
+	tupla in cui nome e descrizione del modulo avranno valore NULL.
+*/
+SELECT doc.nome, doc.cognome, mo.nome, mo.descrizione
+FROM docente as doc, modulo as mo, esame as es
+WHERE  doc.matricola = es.matricola_docente AND es.codice_modulo = mo.codice
+GROUP BY doc.matricola
+;
+
+SELECT doc.nome, doc.cognome, mo.nome, mo.descrizione
+FROM docente as doc, modulo as mo
+WHERE EXISTS (
+SELECT doc.matricola, es.matricola_docente
+FROM esame as es
+WHERE doc.matricola = es.matricola_docente AND es.codice_modulo = mo.codice AND
+EXISTS (
+SELECT mo.nome = 'null'
+WHERE es.matricola_studente IS NULL ))
+GROUP BY doc.matricola
+;
+
+/*
+	12.Mostrare matricola, nome, cognome, data di nascita, media e numero esami sostenuti di ogni studente.
+*/
+SELECT st.matricola, st.nome, st.cognome, st.data_nascita, avg(es.voto) as media_voti, count(es.matricola_studente) AS esami_dati
+FROM studente AS st, esame As es
+WHERE st.matricola = es.matricola_studente
+GROUP BY st.matricola
+;
+
+/*
+	13.Mostrare matricola, nome, cognome, data di nascita, media e numero esami sostenuti di ogni studente del corso di laurea
+	di codice "468632" che abbia media maggiore di 27.
+*/
+SELECT st.matricola, st.nome, st.cognome, st.data_nascita, AVG(es.voto) AS media_voti, count(es.matricola_studente) AS esami_dati
+FROM studente AS st, esame AS es, corso_laurea AS cl
+WHERE st.matricola = es.matricola_studente AND st.codice_corso_laurea = cl.codice
+GROUP BY st.matricola
+HAVING AVG(es.voto) > 27
+;
+
+/*
+	14.Mostrare nome, cognome e data di nascita di tutti gli studenti che ancora non hanno superato nessun esame.
+*/
+SELECT st.nome, st.cognome, st.data_nascita
+FROM studente AS st, esame AS es
+WHERE st.matricola = es.matricola_studente AND es.voto < 18 or NULL
+GROUP BY st.matricola
+;
+
+/*
+	15.Mostrare la matricola di tutti gli studenti che hanno superato almeno un esame e che hanno preso sempre voti maggiori di 26.
+*/
+SELECT DISTINCT st.matricola, st.nome, es.voto
+FROM studente AS st LEFT JOIN esame AS es ON st.matricola = es.matricola_studente
+GROUP BY st.matricola
+HAVING MIN(es.voto) > 26
+;
+
+/*
+	16.Mostrare, per ogni modulo, il numero degli studenti che hanno preso tra 18 e 21, quelli che hanno preso tra 22 e 26 e quelli
+	che hanno preso tra 27 e 30 (con un'unica interrogazione).
+*/
+SELECT mo.nome, COUNT(es.voto >= 18 AND es.voto <= 21) AS numero_esami_tra_18_21, COUNT(es.voto >= 22 AND es.voto <= 26) AS numero_esami_tra_22_26, COUNT(es.voto >= 27 AND es.voto <= 30) AS numero_esami_tra_27_30
+FROM modulo AS mo, esame AS es
+WHERE mo.codice = es.codice_modulo
+GROUP BY mo.nome
+;
+
+
+/*
+	17.Mostrare matricola, nome, cognome e voto di ogni studente che ha preso un voto maggiore della media nel modulo "BDD"
+*/
+
+/*SELECT st.matricola, st.nome, st.cognome, es.voto
+FROM studente AS st JOIN esame AS es ON st.matricola = es.matricola_studente
+WHERE es.codice_modulo = 135486
+GROUP BY es.codice_modulo
+HAVING avg(es.voto) < es.voto
+;
+
+SELECT st.matricola, st.nome, st.cognome, es.voto, es.codice_modulo, avg(es.voto) AS media_voti
+FROM studente AS st, esame AS es
+WHERE es.codice_modulo = 135486
+IN
+(
+SELECT es.voto, avg(es.voto) AS media_voti
+FROM esame AS es
+WHERE es.codice_modulo = 135486
+HAVING es.voto > media_voti)
+;
+NON FUNZIONANO*/
+
+SELECT studente.matricola, studente.nome, studente.cognome, esame.voto, esame.codice_modulo
+FROM studente JOIN esame ON studente.matricola = esame.matricola_studente
+WHERE esame.codice_modulo = 135486 AND esame.voto >
+(
+SELECT AVG(voto) AS media_voti
+FROM esame
+WHERE codice_modulo = 135486
+)
+;
+
+
+
+
+/*
+	18.Mostrare matricola, nome, cognome di ogni studente che ha preso ad almeno 3 esami un voto maggiore della media per quel modulo.
+*/
+SELECT studente.matricola, studente.nome, studente.cognome, esame.voto, COUNT(esame.codice_modulo) AS conteggio_voti 
+FROM studente JOIN esame ON studente.matricola = esame.matricola_studente, modulo 
+WHERE esame.codice_modulo = modulo.codice AND esame.voto > 
+(
+SELECT AVG(voto) AS media_voti 
+FROM esame join modulo 
+WHERE codice_modulo = codice 
+) 
+GROUP BY esame.matricola_studente 
+HAVING conteggio_voti > 3 
+; 
